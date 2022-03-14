@@ -42,8 +42,7 @@ public class BarbedWire extends AMachine {
 
     public void sendEntitiesFlying(@Nonnull Location loc, @Nonnull World w) {
         List<Entity> shotEntities = new ArrayList<>();
-        int waitTime = 0;
-        Vector wirePosition = new Vector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        Vector wirePosition = new Vector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()).add(new Vector(0.5, 0, 0.5));
         Collection<Entity> nearbyEntites = w.getNearbyEntities(loc, MAX_RANGE, MAX_RANGE, MAX_RANGE);
         for (Entity e : nearbyEntites) {
             Vector entityVelocity = e.getVelocity();
@@ -52,18 +51,10 @@ public class BarbedWire extends AMachine {
                 if (NumberConversions.isFinite(pushVelocity.getX()) && NumberConversions.isFinite(pushVelocity.getY()) && NumberConversions.isFinite(pushVelocity.getZ())) {
                     e.setVelocity(pushVelocity);
                     shotEntities.add(e);
-                } else if (NumberConversions.isFinite(entityVelocity.getX()) && NumberConversions.isFinite(entityVelocity.getY()) && NumberConversions.isFinite(entityVelocity.getZ())) {
-                    e.setVelocity(entityVelocity);
-                } else {
+                } else if (!NumberConversions.isFinite(entityVelocity.getX()) || !NumberConversions.isFinite(entityVelocity.getY()) || !NumberConversions.isFinite(entityVelocity.getZ())) {
                     e.setVelocity(new Vector(0, 0, 0));
                 }
             }
-
-            if (shotEntities.contains(e) && waitTime > MIN_WAIT_TIME) {
-                e.setVelocity(entityVelocity);
-            }
-            
-			waitTime++;
         }
     }
 
@@ -104,6 +95,6 @@ public class BarbedWire extends AMachine {
         Vector unit = offset.normalize();
         Double distanceSq = offset.lengthSquared();
         Vector extraVelocity = unit.multiply(PUSH_POWER / distanceSq);
-        return limitVelocity(entityVelocity.add(extraVelocity));
+        return limitVelocity(extraVelocity);
     }
 }

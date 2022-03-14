@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.UUID;
 
 public class AntigravityBubble extends AMachine {
-
     private final Set<UUID> enabledPlayers = new HashSet<>();
 
     private static final int[] BORDER = new int[] { 1, 2, 6, 7, 9, 10, 11, 15, 16, 17, 19, 20, 24, 25 };
@@ -144,5 +143,4 @@ public class AntigravityBubble extends AMachine {
     public int getProgressBarSlot() {
         return 4;
     }
-    
 }
