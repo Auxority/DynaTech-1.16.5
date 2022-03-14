@@ -22,7 +22,8 @@ import java.util.List;
 
 public class BarbedWire extends AMachine {
     private static final int MAX_DIRECTION_VEL = 50;
-    private static final Double MAX_RANGE = 9D;
+    private static final double MAX_RANGE = 9D;
+    private static final float MIN_POWER = 0.1f;
     private static final int PUSH_POWER = 2;
 
     public BarbedWire(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -41,6 +42,8 @@ public class BarbedWire extends AMachine {
 
     public void sendEntitiesFlying(@Nonnull Location loc, @Nonnull World w) {
         List<Entity> shotEntities = new ArrayList<>();
+        int waitTime = 0;
+
         Vector wirePosition = new Vector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()).add(new Vector(0.5, 0, 0.5));
         Collection<Entity> nearbyEntites = w.getNearbyEntities(loc, MAX_RANGE, MAX_RANGE, MAX_RANGE);
         for (Entity e : nearbyEntites) {
@@ -50,10 +53,18 @@ public class BarbedWire extends AMachine {
                 if (NumberConversions.isFinite(pushVelocity.getX()) && NumberConversions.isFinite(pushVelocity.getY()) && NumberConversions.isFinite(pushVelocity.getZ())) {
                     e.setVelocity(pushVelocity);
                     shotEntities.add(e);
-                } else if (!NumberConversions.isFinite(entityVelocity.getX()) || !NumberConversions.isFinite(entityVelocity.getY()) || !NumberConversions.isFinite(entityVelocity.getZ())) {
+                } else if (NumberConversions.isFinite(entityVelocity.getX()) && NumberConversions.isFinite(entityVelocity.getY()) && NumberConversions.isFinite(entityVelocity.getZ())) {
+                    e.setVelocity(entityVelocity);
+                } else {
                     e.setVelocity(new Vector(0, 0, 0));
                 }
             }
+
+            if (shotEntities.contains(e) && waitTime > 8) {
+                e.setVelocity(entityVelocity);
+            }
+
+            waitTime++;
         }
     }
 
@@ -91,17 +102,17 @@ public class BarbedWire extends AMachine {
         Vector entityPosition = new Vector(entityLocation.getX(), entityLocation.getY(), entityLocation.getZ());
         Vector offset = entityPosition.subtract(wirePosition);
         Vector unit = fastNormalize(offset);
-        Double distanceSq = offset.lengthSquared();
-        Vector extraVelocity = unit.multiply(PUSH_POWER + PUSH_POWER / distanceSq);
+        double distanceSq = offset.lengthSquared();
+        Vector extraVelocity = unit.multiply(PUSH_POWER / distanceSq);
         return limitVelocity(extraVelocity);
     }
 
     private Vector fastNormalize(Vector v) {
         float length = fastLength(v);
 
-        v.setX(v.getX() / length);
-        v.setY(v.getY() / length);
-        v.setZ(v.getZ() / length);
+        v.setX(v.getX() * length);
+        v.setY(v.getY() * length);
+        v.setZ(v.getZ() * length);
 
         return v;
     }
