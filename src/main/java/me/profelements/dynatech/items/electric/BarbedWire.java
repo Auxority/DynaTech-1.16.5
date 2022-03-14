@@ -23,8 +23,7 @@ import java.util.List;
 public class BarbedWire extends AMachine {
     private static final int MAX_DIRECTION_VEL = 50;
     private static final double MAX_RANGE = 9D;
-    private static final float MIN_POWER = 0.1f;
-    private static final int PUSH_POWER = 2;
+    private static final double PUSH_POWER = 2D;
 
     public BarbedWire(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -53,9 +52,7 @@ public class BarbedWire extends AMachine {
                 if (NumberConversions.isFinite(pushVelocity.getX()) && NumberConversions.isFinite(pushVelocity.getY()) && NumberConversions.isFinite(pushVelocity.getZ())) {
                     e.setVelocity(pushVelocity);
                     shotEntities.add(e);
-                } else if (NumberConversions.isFinite(entityVelocity.getX()) && NumberConversions.isFinite(entityVelocity.getY()) && NumberConversions.isFinite(entityVelocity.getZ())) {
-                    e.setVelocity(entityVelocity);
-                } else {
+                } else if (!NumberConversions.isFinite(entityVelocity.getX()) || !NumberConversions.isFinite(entityVelocity.getY()) || !NumberConversions.isFinite(entityVelocity.getZ())) {
                     e.setVelocity(new Vector(0, 0, 0));
                 }
             }
@@ -104,7 +101,7 @@ public class BarbedWire extends AMachine {
         Vector unit = fastNormalize(offset);
         double distanceSq = offset.lengthSquared();
         Vector extraVelocity = unit.multiply(PUSH_POWER / distanceSq);
-        return limitVelocity(extraVelocity);
+        return limitVelocity(entityVelocity.add(extraVelocity));
     }
 
     private Vector fastNormalize(Vector v) {
