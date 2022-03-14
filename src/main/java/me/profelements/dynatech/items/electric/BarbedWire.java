@@ -23,7 +23,6 @@ import java.util.List;
 public class BarbedWire extends AMachine {
     private static final int MAX_DIRECTION_VEL = 50;
     private static final Double MAX_RANGE = 9D;
-    private static final int MIN_WAIT_TIME = 8;
     private static final int PUSH_POWER = 2;
 
     public BarbedWire(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -63,7 +62,6 @@ public class BarbedWire extends AMachine {
         return "BARBED_WIRE";
     }
 
-
     @Override
     public boolean isGraphical() {
         return false;
@@ -92,9 +90,43 @@ public class BarbedWire extends AMachine {
         Location entityLocation = e.getLocation();
         Vector entityPosition = new Vector(entityLocation.getX(), entityLocation.getY(), entityLocation.getZ());
         Vector offset = entityPosition.subtract(wirePosition);
-        Vector unit = offset.normalize();
+        Vector unit = fastNormalize(offset);
         Double distanceSq = offset.lengthSquared();
-        Vector extraVelocity = unit.multiply(PUSH_POWER / distanceSq);
+        Vector extraVelocity = unit.multiply(PUSH_POWER + PUSH_POWER / distanceSq);
         return limitVelocity(extraVelocity);
+    }
+
+    private Vector fastNormalize(Vector v) {
+        float length = fastLength(v);
+
+        v.setX(v.getX() / length);
+        v.setY(v.getY() / length);
+        v.setZ(v.getZ() / length);
+
+        return v;
+    }
+
+    private float fastLength(Vector v) {
+        double x = v.getX();
+        double y = v.getY();
+        double z = v.getZ();
+
+        return fastSqrt(x * x + y * y + z * z);
+    }
+
+    private float fastSqrt(double double_num) {
+        int i;
+        float x2, y;
+        float threehalfs = 1.5F;
+        float num = (float) double_num;
+
+        x2 = num * 0.5F;
+        y = num;
+        i = Float.floatToIntBits(y);
+        i = 0x5f3759df - (i >> 1);
+        y = Float.intBitsToFloat(i);
+        y = y * (threehalfs - (x2 * y * y));
+
+        return y;
     }
 }
